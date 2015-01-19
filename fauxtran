@@ -1,0 +1,374 @@
+#!/usr/bin/ruby
+require 'stringio'
+require 'logger'
+
+class SyntaxNode
+  attr_reader :indentation
+  attr_reader :type
+  attr_reader :line_counter
+  attr_accessor :cargo
+
+  def initialize(line_counter, type, indentation, cargo = nil)
+    @line_counter = line_counter
+    @type = type
+    @children = []
+    @indentation = indentation
+    @cargo = cargo
+    @indent = " " * (2 * @indentation)
+  end
+
+  def <<(node)
+    @children << node
+  end
+
+  def to_s
+    buf = StringIO.new
+    headline = @indentation.to_s.rjust(2) + @indent + ":" + @type.to_s.ljust(10)
+    if @cargo
+      headline += " => " + @cargo
+    end
+    buf.puts headline
+
+    @children.each do |c|
+      buf.puts c.to_s
+    end
+
+    return buf.string
+  end
+
+  def dot_label
+    ret = @type.to_s
+    if @type == :subroutine
+      # fixme: use grammar here
+      @cargo =~ /subroutine\s+(\w+)/i
+      ret += "<#{$1}>"
+    end
+    if @type == :call
+      # fixme: use grammar here
+      @cargo =~ /call\s+(\w+)/i
+      ret += "<#{$1}>"
+    end
+    if @type == :assignment
+      # fixme: use grammar here
+      @cargo =~ /\s*(.*)/i
+      assignment = $1
+      assignment.gsub!(/"/, "")
+      ret += "<#{assignment}>"
+    end
+
+    return ret
+  end
+
+  def dot_nodes
+    ret = ["node_#{@line_counter} [label=\"#{dot_label}\"]"] + @children.map { |child| child.dot_nodes}
+    ret.flatten
+  end
+
+  def dot_edges
+    ret = @children.map do |child|
+      ["node_#{@line_counter} -> node_#{child.line_counter}"] + child.dot_edges
+    end
+
+    ret.flatten
+  end
+
+  def check_end(clause, line)
+    return clause == @type
+  end
+end
+
+class IfThenElseNode < SyntaxNode
+  def add_else_branch
+    @else = []
+  end
+
+  def <<(node)
+    if @else.nil?
+      @children << node
+    else
+      @else << node
+    end
+  end
+
+  def dot_nodes
+    ret = super
+    if @else
+      ret += ["node_#{@line_counter}_else [label=\"else\"]"] + @else.map { |child| child.dot_nodes }
+    end
+
+    ret.flatten
+  end
+
+  def dot_edges
+    ret = super
+    if @else
+      ret += ["node_#{@line_counter} -> node_#{@line_counter}_else"] + @else.map { |child| ["node_#{@line_counter}_else -> node_#{child.line_counter}"] + child.dot_edges }
+    end
+
+    ret.flatten
+  end
+
+  def to_s
+    buf = StringIO.new
+    buf.puts super
+
+    if @else
+      buf.puts @indentation.to_s.rjust(2) + @indent + ":else"
+
+      @else.each do |c|
+        buf.puts c.to_s
+      end
+    end
+
+    return buf.string
+  end
+end
+
+class ArchaicDoLoop < SyntaxNode
+  def check_end(clause, line)
+    return false unless line =~ /^\s*(\w+)\s+continue/i
+    line_label = $1
+
+    @cargo =~ /do\s+(\w+)/i
+    loop_label = $1
+
+    return super && (line_label == loop_label)
+  end
+end
+
+def terminate_clause(stack, clause, line)
+  if stack.last.check_end(clause, line)
+    stack.pop
+  else
+    raise "clause :#{clause.to_s} does not match :#{stack.last.type.to_s}, »#{stack.last.cargo}«"
+  end
+end
+
+def parse_line(line_counter, stack, line)
+  @logger.debug "at line #{line_counter}:#{stack.last.indentation} »#{line.chomp}«"
+  new_indentation = stack.last.indentation + 1
+
+  case
+    # nesting:
+  when line =~ /^\s*module (\w+)/i
+    new_node = SyntaxNode.new(line_counter, :module, new_indentation, line.chomp)
+    stack.last << new_node
+    stack << new_node
+  when line =~ /^\s*end module (\w+)/i
+    terminate_clause(stack, :module, line)
+
+  when line =~ /^\s*program (\w+)/i
+    new_node = SyntaxNode.new(line_counter, :program, new_indentation, line.chomp)
+    stack.last << new_node
+    stack << new_node
+  when line =~ /^\s*end program (\w+)/i
+    terminate_clause(stack, :program, line)
+
+  when line =~ /^\s*function (\w+)\s*\((.*)\)/i
+    new_node = SyntaxNode.new(line_counter, :function, new_indentation, line.chomp)
+    stack.last << new_node
+    stack << new_node
+  when line =~ /^\s*end function (\w+)/i
+    terminate_clause(stack, :function, line)
+
+  when line =~ /^\s*subroutine (\w+)\s*\((.*)\)/i
+    new_node = SyntaxNode.new(line_counter, :subroutine, new_indentation, line.chomp)
+    stack.last << new_node
+    stack << new_node
+  when line =~ /^\s*end subroutine (\w+)/i
+    terminate_clause(stack, :subroutine, line)
+
+  when line =~ /^\s*if\s?\((.*)\)\s*then/i
+    new_node = IfThenElseNode.new(line_counter, :if,         new_indentation, line.chomp)
+    stack.last << new_node
+    stack << new_node
+  when line =~ /^\s*if\s?\((.*)\)\s*(.+)/i
+    new_node = IfThenElseNode.new(line_counter, :if,          new_indentation, line.chomp)
+    stack.last << new_node
+    stack << new_node
+    parse_line(line_counter.to_s + "b", stack, $2)
+    stack.pop
+  when line =~ /^\s+else\s*(.*)$/i
+    stack.last.add_else_branch
+    remainder = $1
+    # drop last if-clause from stack as "if...else if ... endif" needs
+    # only one endif, not two, in Fortran.
+    if remainder =~ /^if/i
+      stack.pop
+    end
+    parse_line(line_counter.to_s + "b", stack, remainder)
+  when line =~ /^\s*end\s*if/i
+    terminate_clause(stack, :if, line)
+    # puts "\033[1;31m KPOP! \033[0;37m"
+
+  when line =~ /^\s*do while (.+)/i
+    new_node = SyntaxNode.new(line_counter, :do_loop, new_indentation, line.chomp)
+    stack.last << new_node
+    stack << new_node
+  when line =~ /^\s*(\w+:\s*)?do(\s+\w+)?\s+(\w+)\s*=\s*([^,]+)\s*,\s*([^,]+)\s*(,[^,]+)?/i
+    if !$2.nil?
+      new_node = ArchaicDoLoop.new(line_counter, :archaic_do_loop, new_indentation, line.chomp)
+    else
+      new_node = SyntaxNode.new(line_counter, :do_loop, new_indentation, line.chomp)
+    end
+    stack.last << new_node
+    stack << new_node
+    # puts "\033[1;32m PUSH! \033[0;37m"
+  when line =~ /^\s*end\s*do/i
+    terminate_clause(stack, :do_loop, line)
+    # puts "\033[1;31m KPOP! \033[0;37m"
+
+  when line =~ /^\s*where (.+)/i
+    new_node = SyntaxNode.new(line_counter, :where_loop, new_indentation, line.chomp)
+    stack.last << new_node
+    stack << new_node
+    # puts "\033[1;32m PUSH! \033[0;37m"
+  when line =~ /^\s*end where/i
+    terminate_clause(stack, :where_loop, line)
+    # puts "\033[1;31m KPOP! \033[0;37m"
+
+    # subroutine header:
+  when line =~ /^\s+implicit none/i
+    new_node = SyntaxNode.new(line_counter, :implicit,   new_indentation, line.chomp)
+    stack.last << new_node
+  when line =~ /^\s*use,? (\w+)/i
+    new_node = SyntaxNode.new(line_counter, :using,      new_indentation, line.chomp)
+    stack.last << new_node
+
+    # definitions:
+  when line =~ /^\s+character(\(\w+\))?,? (.+)/i
+    new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp)
+    stack.last << new_node
+
+  when line =~ /^\s+integer(\(\w+\))?,? (.+)/i
+    new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp)
+    stack.last << new_node
+
+  when line =~ /^\s+real(\(\w+\))?,? (.+)/i
+    new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp)
+    stack.last << new_node
+
+  when line =~ /^\s+logical(\(\w+\))?,? (.+)/i
+    new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp)
+    stack.last << new_node
+
+    # "normal" statements
+  when line =~ /^\s*call /i
+    new_node = SyntaxNode.new(line_counter, :call,       new_indentation, line.chomp)
+    stack.last << new_node
+  when line =~ /^\s*write /i
+    new_node = SyntaxNode.new(line_counter, :write,       new_indentation, line.chomp)
+    stack.last << new_node
+  when line =~ /^\s*print /i
+    new_node = SyntaxNode.new(line_counter, :write,       new_indentation, line.chomp)
+    stack.last << new_node
+  when line =~ /^\s*stop /i
+    new_node = SyntaxNode.new(line_counter, :stop,       new_indentation, line.chomp)
+    stack.last << new_node
+  when line =~ /^\s*allocate\(.*\)/i
+    new_node = SyntaxNode.new(line_counter, :allocate,   new_indentation, line.chomp)
+    stack.last << new_node
+  when line =~ /^\s*return/i
+    new_node = SyntaxNode.new(line_counter, :return,     new_indentation, line.chomp)
+    stack.last << new_node
+  when line =~ /^(\s\d+)?\s*([^,]+(,[^,]+)*)(\(:?\w*\))?\s*=/i
+    new_node = SyntaxNode.new(line_counter, :assignment, new_indentation, line.chomp)
+    stack.last << new_node
+  when line =~ /^(\s\d+)?\s+continue/i
+    if stack.last.check_end(:archaic_do_loop, line)
+      terminate_clause(stack, :archaic_do_loop, line)
+    else
+      new_node = SyntaxNode.new(line_counter, :continue, new_indentation, line.chomp)
+      stack.last << new_node
+    end
+  when line =~ /^\s+goto/i
+    new_node = SyntaxNode.new(line_counter, :goto, new_indentation, line.chomp)
+    stack.last << new_node
+
+    # passive nodes
+  when line =~ /^c.*/i
+    new_node = SyntaxNode.new(line_counter, :comment,    new_indentation, line.chomp)
+    stack.last << new_node
+  when line =~ /^\s*\!/i
+    new_node = SyntaxNode.new(line_counter, :comment,    new_indentation, line.chomp)
+    stack.last << new_node
+  when line =~ /^\s*$/
+    new_node = SyntaxNode.new(line_counter, :empty,      new_indentation, line.chomp)
+    stack.last << new_node
+  when line =~ /^#/
+    new_node = SyntaxNode.new(line_counter, :preproc,    new_indentation, line.chomp)
+    stack.last << new_node
+
+  else
+    new_node = SyntaxNode.new(line_counter, :other,      new_indentation, "\033[1;31m" + line.chomp + "\033[0;37m")
+    stack.last << new_node
+  end
+end
+
+# subroutine_regexp = /^\s+subroutine (\w+)\(\)\n(.*?)^\s+end\ subroutine/im
+# call_regexp = /^\s+call \w+\(.*\)/i
+
+@logger = Logger.new(STDERR)
+# @logger.level = Logger::INFO
+
+if ARGV.size != 1
+  STDERR.puts "Usage: #$0 INFILE"
+  exit 1
+end
+
+infile = ARGV[0]
+tree = SyntaxNode.new("root", :root, 0)
+stack = [tree]
+line_counter = 0
+
+File.open(infile) do |infile|
+  aggregated_lines = []
+
+  infile.readlines.each do |line|
+    if line =~ /^\s+\&(.*)/
+      aggregated_lines[-1] = aggregated_lines.last + " " + $1.chomp
+    else
+      aggregated_lines.push line.chomp
+    end
+  end
+
+  # prune "#if 1" clauses. if we were doing this right, we'd need to
+  # parser passes (first for c-preprocessor, second for Fortran), but
+  # we really want to preserve the preprocessor statements, so we're
+  # just cutting away the most superfluous stuff.
+  cleared_lines = []
+  state = :discharged
+  aggregated_lines.each do |line|
+    if line =~ /^#if 1/
+      state = :charged
+    end
+
+    if line =~ /^#endif/
+      state = :discharged
+    end
+
+    if (line =~/^#else/) && (state == :charged)
+      state = :ablaze
+    end
+
+    if state != :ablaze
+      cleared_lines << line
+    end
+  end
+
+  cleared_lines.each do |line|
+    parse_line(line_counter, stack, line)
+    line_counter += 1
+  end
+
+end
+
+def print_tree(tree)
+  puts "digraph AST {"
+  tree.dot_nodes.each { |node| puts node }
+  tree.dot_edges.each { |node| puts node }
+  puts "}"
+end
+
+# puts tree.to_s
+print_tree tree
