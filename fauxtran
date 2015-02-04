@@ -260,6 +260,7 @@ IF_EXPRESSION = /#{expression}/i
 
 def parse_line(line_counter, stack, line, comments)
   @logger.debug "at line #{line_counter}:#{stack.last.indentation} »#{line.chomp}«"
+
   new_indentation = stack.last.indentation + 1
 
 
@@ -369,6 +370,7 @@ def parse_line(line_counter, stack, line, comments)
     stack.last << new_node
 
     # definitions:
+    #fixme: unite these definition patterns
   when line =~ /^\s+character(\(\w+\))?,? (.+)/i
     new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
     stack.last << new_node
@@ -381,7 +383,8 @@ def parse_line(line_counter, stack, line, comments)
     new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
     stack.last << new_node
 
-  when line =~ /^\s+real(\(\w+\))?,? (.+)/i
+    #andi1 fixme
+  when line =~ /^\s*real(\([^\)\n]*\))?,?(.*)$/i
     new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
     stack.last << new_node
 
@@ -438,9 +441,6 @@ def parse_line(line_counter, stack, line, comments)
   end
 end
 
-# subroutine_regexp = /^\s+subroutine (\w+)\(\)\n(.*?)^\s+end\ subroutine/im
-# call_regexp = /^\s+call \w+\(.*\)/i
-
 @logger = Logger.new(STDERR)
 @logger.level = Logger::INFO
 
@@ -494,8 +494,6 @@ File.open(infile) do |infile|
 
   # handle line continuation/aggregation
   raw_lines.each do |line|
-    puts "at(#{line[:number]}) = »#{line[:cargo]}«"
-
     if line[:cargo] =~ /^\s+\&(.*)/
       raise "no preceeding line to fuse with" if aggregated_lines.size == 0
       aggregated_lines[-1][:cargo] += " " + $1
