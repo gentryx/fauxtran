@@ -74,7 +74,7 @@ class SyntaxNode
     buf = StringIO.new
     headline = @indentation.to_s.rjust(2) + @indent + ":" + @type.to_s.ljust(10)
     if @cargo
-      headline += " => " + @cargo
+      headline += " => »" + @cargo + "«"
     end
     buf.puts headline
 
@@ -263,7 +263,6 @@ def parse_line(line_counter, stack, line, comments)
 
   new_indentation = stack.last.indentation + 1
 
-
   case
     # passive nodes
   when line =~ /^\s*$/
@@ -371,15 +370,15 @@ def parse_line(line_counter, stack, line, comments)
 
     # definitions:
     #fixme: unite these definition patterns
-  when line =~ /^\s+character(\(\w+\))?,? (.+)/i
+  when line =~ /^\s*character(\(\w+\))?,? (.+)/i
     new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
     stack.last << new_node
 
-  when line =~ /^\s+complex(\(\w+\))?,? (.+)/i
+  when line =~ /^\s*complex(\(\w+\))?,? (.+)/i
     new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
     stack.last << new_node
 
-  when line =~ /^\s+integer(\(\w+\))?,? (.+)/i
+  when line =~ /^\s*integer(\(\w+\))?,? (.+)/i
     new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
     stack.last << new_node
 
@@ -388,7 +387,7 @@ def parse_line(line_counter, stack, line, comments)
     new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
     stack.last << new_node
 
-  when line =~ /^\s+logical(\(\w+\))?,? (.+)/i
+  when line =~ /^\s*logical(\(\w+\))?,? (.+)/i
     new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
     stack.last << new_node
 
@@ -494,7 +493,7 @@ File.open(infile) do |infile|
 
   # handle line continuation/aggregation
   raw_lines.each do |line|
-    if line[:cargo] =~ /^\s+\&(.*)/
+    if line[:cargo] =~ /^\s+\&\s*(.*)$/
       raise "no preceeding line to fuse with" if aggregated_lines.size == 0
       aggregated_lines[-1][:cargo] += " " + $1
       aggregated_lines[-1][:comments] += line[:comments]
@@ -503,7 +502,7 @@ File.open(infile) do |infile|
     end
 
     if (aggregated_lines.size > 0) && (aggregated_lines[-1][:cargo] =~ /^(.*)\&\s*$/)
-      aggregated_lines[-1][:cargo] = $1 + " " + line[:cargo]
+      aggregated_lines[-1][:cargo] = $1.strip + " " + line[:cargo].strip
       aggregated_lines[-1][:comments] += line[:comments]
       aggregated_lines[-1][:end] = line[:number]
       next
@@ -553,5 +552,6 @@ end
 # puts tree.to_s
 # print_tree tree
 subtree = tree[[[:module, "MG_STENCIL_COMPS_MOD"], [:subroutine, "MG_STENCIL_2D5PT"]]]
+puts subtree
 # pp subtree
-print_tree subtree
+# print_tree subtree
