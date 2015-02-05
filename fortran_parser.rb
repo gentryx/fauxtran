@@ -1,4 +1,4 @@
-load './archaic_do_loop.rb'
+load './archaic_do_loop_node.rb'
 load './assignment_node.rb'
 load './default_node.rb'
 load './empty_node.rb'
@@ -127,16 +127,6 @@ class FortranParser
     return tree
   end
 
-  def terminate_clause(stack, clause, line, comments)
-    stack.last.add_comments(comments)
-
-    if stack.last.check_end(clause, line)
-      stack.pop
-    else
-      raise "clause :#{clause.to_s} does not match :#{stack.last.type.to_s}, »#{stack.last.cargo}«"
-    end
-  end
-
   def parse_line(line_counter, stack, line, comments)
     @logger.debug "at line #{line_counter}:#{stack.last.indentation} »#{line.chomp}«"
 
@@ -155,25 +145,25 @@ class FortranParser
       stack.last << new_node
       stack << new_node
     when line =~ /^\s*end module (\w+)/i
-      terminate_clause(stack, :module, line, comments)
+      SyntaxNode.terminate_clause(stack, :module, line, comments)
 
     when line =~ /^\s*program (\w+)/i
       new_node = DefaultNode.new(line_counter, :program, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
     when line =~ /^\s*end program (\w+)/i
-      terminate_clause(stack, :program, line, comments)
+      SyntaxNode.terminate_clause(stack, :program, line, comments)
 
     when line =~ /^\s*function (\w+)\s*\((.*)\)/i
       new_node = DefaultNode.new(line_counter, :function, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
     when line =~ /^\s*end function (\w+)/i
-      terminate_clause(stack, :function, line, comments)
+      SyntaxNode.terminate_clause(stack, :function, line, comments)
 
     when SubroutineNode.accept(line, stack, line_counter, new_indentation, comments)
     when line =~ /^\s*end subroutine (\w+)/i
-      terminate_clause(stack, :subroutine, line, comments)
+      SyntaxNode.terminate_clause(stack, :subroutine, line, comments)
 
     when line =~ /^\s+select case\(.*\)\s*$/i
       new_node = SelectNode.new(line_counter, :select, new_indentation, line.chomp, comments)
@@ -182,7 +172,7 @@ class FortranParser
     when line =~ /^\s+case\((.+)\)\s*$/i
       stack.last.add_case($1)
     when line =~ /^\s+end\s+select\s*$/i
-      terminate_clause(stack, :select, line, comments)
+      SyntaxNode.terminate_clause(stack, :select, line, comments)
 
     when line =~ /#{@if_expression}/i
       trailing_expression = $42
@@ -205,33 +195,21 @@ class FortranParser
       end
       parse_line(line_counter.to_s + "b", stack, remainder, comments)
     when line =~ /^\s*end\s*if/i
-      terminate_clause(stack, :if, line, comments)
+      SyntaxNode.terminate_clause(stack, :if, line, comments)
       # puts "\033[1;31m KPOP! \033[0;37m"
 
     when line =~ /^\s*do while (.+)/i
       new_node = DefaultNode.new(line_counter, :do_loop, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
-    when line =~ /^\s*(\w+:\s*)?do(\s+\w+)?\s+(\w+)\s*=\s*([^,]+)\s*,\s*([^,]+)\s*(,[^,]+)?/i
-      if !$2.nil?
-        new_node = ArchaicDoLoop.new(line_counter, :archaic_do_loop, new_indentation, line.chomp, comments)
-      else
-        new_node = DefaultNode.new(line_counter, :do_loop, new_indentation, line.chomp, comments)
-      end
-      stack.last << new_node
-      stack << new_node
-      # puts "\033[1;32m PUSH! \033[0;37m"
-    when line =~ /^\s*end\s*do/i
-      terminate_clause(stack, :do_loop, line, comments)
-      # puts "\033[1;31m KPOP! \033[0;37m"
-
+    when ArchaicDoLoopNode.accept(line, stack, line_counter, new_indentation, comments)
     when line =~ /^\s*where (.+)/i
       new_node = DefaultNode.new(line_counter, :where_loop, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
       # puts "\033[1;32m PUSH! \033[0;37m"
     when line =~ /^\s*end where/i
-      terminate_clause(stack, :where_loop, line, comments)
+      SyntaxNode.terminate_clause(stack, :where_loop, line, comments)
       # puts "\033[1;31m KPOP! \033[0;37m"
 
       # subroutine header:
@@ -280,7 +258,7 @@ class FortranParser
       stack.last << new_node
     when line =~ /^(\s*\d+)?\s+continue\s*$/i
       if stack.last.check_end(:archaic_do_loop, line)
-        terminate_clause(stack, :archaic_do_loop, line, comments)
+        SyntaxNode.terminate_clause(stack, :archaic_do_loop, line, comments)
       else
         new_node = DefaultNode.new(line_counter, :continue, new_indentation, line.chomp, comments)
         stack.last << new_node

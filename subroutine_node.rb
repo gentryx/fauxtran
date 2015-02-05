@@ -6,7 +6,15 @@ class SubroutineNode < SyntaxNode
       new_node = SubroutineNode.new(line_counter, :subroutine, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
+      return true
     end
+
+    if line =~ /^\s*end\s*do/i
+      terminate_clause(stack, :do_loop, line, comments)
+      return true
+    end
+
+    return false
   end
 
   def to_cpp(io = StringIO.new)

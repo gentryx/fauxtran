@@ -4,6 +4,16 @@ class SyntaxNode
   attr_reader :line_counter
   attr_accessor :cargo
 
+  def self.terminate_clause(stack, clause, line, comments)
+    stack.last.add_comments(comments)
+
+    if stack.last.check_end(clause, line)
+      stack.pop
+    else
+      raise "clause :#{clause.to_s} does not match :#{stack.last.type.to_s}, »#{stack.last.cargo}«"
+    end
+  end
+
   def initialize(line_counter, type, indentation, cargo, comments)
     @line_counter = line_counter
     @type = type
