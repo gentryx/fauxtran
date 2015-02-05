@@ -53,14 +53,19 @@ class SyntaxNode
     return nil
   end
 
-  def to_dot
-    io = StringIO.new
+  # returns a string representation in GraphView's DOT format
+  def to_dot(io = StringIO.new)
     io.puts "digraph AST {"
     dot_nodes.each { |node| io.puts node }
     dot_edges.each { |node| io.puts node }
     io.puts "}"
 
     return io.string
+  end
+
+  # convert tree to C++ code
+  def to_cpp(io = StringIO.new)
+    raise "implementation missing"
   end
 
   def add_comments(new_comments)

@@ -1,3 +1,9 @@
+load './syntax_node.rb'
+load './if_then_else_node.rb'
+load './select_node.rb'
+load './archaic_do_loop.rb'
+load './default_node.rb'
+
 class FortranParser
   def initialize
     @logger = Logger.new(STDERR)
@@ -135,36 +141,36 @@ class FortranParser
     case
       # passive nodes
     when line =~ /^\s*$/
-      new_node = SyntaxNode.new(line_counter, :empty,      new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :empty,      new_indentation, line.chomp, comments)
       stack.last << new_node
     when line =~ /^#/
-      new_node = SyntaxNode.new(line_counter, :preproc,    new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :preproc,    new_indentation, line.chomp, comments)
       stack.last << new_node
 
       # nesting:
     when line =~ /^\s*module (\w+)/i
-      new_node = SyntaxNode.new(line_counter, :module, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :module, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
     when line =~ /^\s*end module (\w+)/i
       terminate_clause(stack, :module, line, comments)
 
     when line =~ /^\s*program (\w+)/i
-      new_node = SyntaxNode.new(line_counter, :program, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :program, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
     when line =~ /^\s*end program (\w+)/i
       terminate_clause(stack, :program, line, comments)
 
     when line =~ /^\s*function (\w+)\s*\((.*)\)/i
-      new_node = SyntaxNode.new(line_counter, :function, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :function, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
     when line =~ /^\s*end function (\w+)/i
       terminate_clause(stack, :function, line, comments)
 
     when line =~ /^\s*subroutine (\w+)\s*\((.*)\)/i
-      new_node = SyntaxNode.new(line_counter, :subroutine, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :subroutine, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
     when line =~ /^\s*end subroutine (\w+)/i
@@ -204,14 +210,14 @@ class FortranParser
       # puts "\033[1;31m KPOP! \033[0;37m"
 
     when line =~ /^\s*do while (.+)/i
-      new_node = SyntaxNode.new(line_counter, :do_loop, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :do_loop, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
     when line =~ /^\s*(\w+:\s*)?do(\s+\w+)?\s+(\w+)\s*=\s*([^,]+)\s*,\s*([^,]+)\s*(,[^,]+)?/i
       if !$2.nil?
         new_node = ArchaicDoLoop.new(line_counter, :archaic_do_loop, new_indentation, line.chomp, comments)
       else
-        new_node = SyntaxNode.new(line_counter, :do_loop, new_indentation, line.chomp, comments)
+        new_node = DefaultNode.new(line_counter, :do_loop, new_indentation, line.chomp, comments)
       end
       stack.last << new_node
       stack << new_node
@@ -221,7 +227,7 @@ class FortranParser
       # puts "\033[1;31m KPOP! \033[0;37m"
 
     when line =~ /^\s*where (.+)/i
-      new_node = SyntaxNode.new(line_counter, :where_loop, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :where_loop, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
       # puts "\033[1;32m PUSH! \033[0;37m"
@@ -231,77 +237,77 @@ class FortranParser
 
       # subroutine header:
     when line =~ /^\s+implicit none/i
-      new_node = SyntaxNode.new(line_counter, :implicit,   new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :implicit,   new_indentation, line.chomp, comments)
       stack.last << new_node
     when line =~ /^\s*use,? (\w+)/i
-      new_node = SyntaxNode.new(line_counter, :using,      new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :using,      new_indentation, line.chomp, comments)
       stack.last << new_node
 
       # definitions:
       #fixme: unite these definition patterns
     when line =~ /^\s*character(\(\w+\))?,? (.+)/i
-      new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
       stack.last << new_node
 
     when line =~ /^\s*complex(\(\w+\))?,? (.+)/i
-      new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
       stack.last << new_node
 
     when line =~ /^\s*integer(\(\w+\))?,? (.+)/i
-      new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
       stack.last << new_node
 
       #andi1 fixme
     when line =~ /^\s*real(\([^\)\n]*\))?,?(.*)$/i
-      new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
       stack.last << new_node
 
     when line =~ /^\s*logical(\(\w+\))?,? (.+)/i
-      new_node = SyntaxNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :definition, new_indentation, line.chomp, comments)
       stack.last << new_node
 
       # control flow
     when line =~ /^\s*call\s+\w+\s*(\(.*\)\s*)?$/i
-      new_node = SyntaxNode.new(line_counter, :call,       new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :call,       new_indentation, line.chomp, comments)
       stack.last << new_node
     when line =~ /^\s*stop\s+$/i
-      new_node = SyntaxNode.new(line_counter, :stop,       new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :stop,       new_indentation, line.chomp, comments)
       stack.last << new_node
     when line =~ /^\s*return\s*$/i
-      new_node = SyntaxNode.new(line_counter, :return,     new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :return,     new_indentation, line.chomp, comments)
       stack.last << new_node
     when line =~ /^\s*cycle\s*$/i
-      new_node = SyntaxNode.new(line_counter, :cycle,      new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :cycle,      new_indentation, line.chomp, comments)
       stack.last << new_node
     when line =~ /^(\s*\d+)?\s+continue\s*$/i
       if stack.last.check_end(:archaic_do_loop, line)
         terminate_clause(stack, :archaic_do_loop, line, comments)
       else
-        new_node = SyntaxNode.new(line_counter, :continue, new_indentation, line.chomp, comments)
+        new_node = DefaultNode.new(line_counter, :continue, new_indentation, line.chomp, comments)
         stack.last << new_node
       end
     when line =~ /^\s+goto\s+(\w+)\s*$/i
-      new_node = SyntaxNode.new(line_counter, :goto, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :goto, new_indentation, line.chomp, comments)
       stack.last << new_node
 
       # "normal" statements
     when line =~ /^\s*\d*\s*format\(.*\)/i
-      new_node = SyntaxNode.new(line_counter, :format,     new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :format,     new_indentation, line.chomp, comments)
       stack.last << new_node
     when line =~ /^\s*read\(.*\)/i
-      new_node = SyntaxNode.new(line_counter, :read,       new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :read,       new_indentation, line.chomp, comments)
       stack.last << new_node
     when line =~ /^\s*write\s*\(.*\)\s+.+$/i
-      new_node = SyntaxNode.new(line_counter, :write,      new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :write,      new_indentation, line.chomp, comments)
       stack.last << new_node
     when line =~ /^\s*print /i
-      new_node = SyntaxNode.new(line_counter, :print,      new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :print,      new_indentation, line.chomp, comments)
       stack.last << new_node
     when line =~ /^\s*allocate\(.*\)/i
-      new_node = SyntaxNode.new(line_counter, :allocate,   new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :allocate,   new_indentation, line.chomp, comments)
       stack.last << new_node
     when line =~ /^(\s\d+)?\s*([^,]+(,[^,]+)*)(\(:?\w*\))?\s*=/i
-      new_node = SyntaxNode.new(line_counter, :assignment, new_indentation, line.chomp, comments)
+      new_node = DefaultNode.new(line_counter, :assignment, new_indentation, line.chomp, comments)
       stack.last << new_node
 
     else

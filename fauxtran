@@ -3,10 +3,6 @@ require 'stringio'
 require 'logger'
 require 'pp'
 
-load './syntax_node.rb'
-load './if_then_else_node.rb'
-load './select_node.rb'
-load './archaic_do_loop.rb'
 load './fortran_parser.rb'
 
 if ARGV.size != 1
@@ -23,4 +19,4 @@ subtree = tree[[[:module, "MG_STENCIL_COMPS_MOD"], [:subroutine, "MG_STENCIL_2D5
 # puts subtree
 # pp subtree
 
-puts subtree.to_dot
+puts subtree.to_cpp
