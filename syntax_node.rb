@@ -53,6 +53,16 @@ class SyntaxNode
     return nil
   end
 
+  def to_dot
+    io = StringIO.new
+    io.puts "digraph AST {"
+    dot_nodes.each { |node| io.puts node }
+    dot_edges.each { |node| io.puts node }
+    io.puts "}"
+
+    return io.string
+  end
+
   def add_comments(new_comments)
     @comments += new_comments
   end
