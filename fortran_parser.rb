@@ -1,8 +1,10 @@
-load './syntax_node.rb'
-load './if_then_else_node.rb'
-load './select_node.rb'
 load './archaic_do_loop.rb'
 load './default_node.rb'
+load './if_then_else_node.rb'
+load './root_node.rb'
+load './select_node.rb'
+load './subroutine_node.rb'
+load './syntax_node.rb'
 
 class FortranParser
   def initialize
@@ -27,7 +29,7 @@ class FortranParser
   end
 
   def parse_file(infile)
-    tree = SyntaxNode.new("root", :root, 0, "", [])
+    tree = RootNode.new("root", :root, 0, "", [])
     stack = [tree]
 
     File.open(infile) do |infile|
@@ -54,7 +56,7 @@ class FortranParser
             raw_lines[-1][:comments] << $1
             next
           end
-          new_line[:comments] = $1
+          new_line[:comments] << $1
         when line =~ /^([^\!]*)\!(.*)$/
           new_line[:cargo] += $1
           new_line[:comments] << $2
@@ -169,10 +171,7 @@ class FortranParser
     when line =~ /^\s*end function (\w+)/i
       terminate_clause(stack, :function, line, comments)
 
-    when line =~ /^\s*subroutine (\w+)\s*\((.*)\)/i
-      new_node = DefaultNode.new(line_counter, :subroutine, new_indentation, line.chomp, comments)
-      stack.last << new_node
-      stack << new_node
+    when SubroutineNode.accept(line, stack, line_counter, new_indentation, comments)
     when line =~ /^\s*end subroutine (\w+)/i
       terminate_clause(stack, :subroutine, line, comments)
 

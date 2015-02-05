@@ -65,7 +65,7 @@ class SyntaxNode
 
   # convert tree to C++ code
   def to_cpp(io = StringIO.new)
-    raise "implementation missing"
+    raise "implementation missing for #@type"
   end
 
   def add_comments(new_comments)

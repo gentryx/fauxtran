@@ -12,6 +12,23 @@ class SelectNode < SyntaxNode
     @case_statements << []
   end
 
+  def to_cpp(io = StringIO.new)
+    @comments.each do |comment|
+      io.puts "// #{comment}"
+    end
+    io.puts "switch (fixme) {"
+
+    @case_conditions.size.times do |i|
+      io.puts "case #{@case_conditions[i]}:"
+      @case_statements[i].each { |node| node.to_cpp(io) }
+      io.puts "break;"
+    end
+
+    io.puts "}"
+
+    return io.string
+  end
+
   def <<(node)
     @case_statements.last << node
   end

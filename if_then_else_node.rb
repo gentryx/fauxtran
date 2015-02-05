@@ -5,6 +5,24 @@ class IfThenElseNode < SyntaxNode
     @else = []
   end
 
+  def to_cpp(io = StringIO.new)
+    @comments.each do |comment|
+      io.puts @indent + "// #{comment}"
+    end
+
+    io.puts @indent + "if (fixme) {"
+    @children.each { |node| node.to_cpp(io) }
+
+    if @else
+      io.puts @indent + "} else {"
+      @else.each { |node| node.to_cpp(io) }
+    end
+
+    io.puts @indent + "}"
+
+    return io.string
+  end
+
   def <<(node)
     if @else.nil?
       @children << node

@@ -15,8 +15,8 @@ tree = parser.parse_file(ARGV[0])
 
 # puts tree.to_s
 # print_tree tree
-subtree = tree[[[:module, "MG_STENCIL_COMPS_MOD"], [:subroutine, "MG_STENCIL_2D5PT"]]]
-# puts subtree
-# pp subtree
+# subtree = tree[[[:module, "MG_STENCIL_COMPS_MOD"], [:subroutine, "MG_STENCIL_2D5PT"]]]
 
-puts subtree.to_cpp
+# puts subtree
+# puts subtree.to_cpp
+puts tree.to_cpp

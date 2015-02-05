@@ -1,11 +1,12 @@
 load './syntax_node.rb'
 
-class DefaultNode < SyntaxNode
+class RootNode < SyntaxNode
   def to_cpp(io = StringIO.new)
+    # fixme: unify this code among all node classes?
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts "// #{comment}"
     end
-    io.puts @indent + "// FORTRAN: #@type: #@cargo"
+
     @children.each { |node| node.to_cpp(io) }
 
     return io.string
