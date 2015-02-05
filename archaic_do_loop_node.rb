@@ -1,6 +1,6 @@
 load './syntax_node.rb'
 
-class ArchaicDoLoop < SyntaxNode
+class ArchaicDoLoopNode < SyntaxNode
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
       io.puts "// #{comment}"
