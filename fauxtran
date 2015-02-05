@@ -9,15 +9,13 @@ load './select_node.rb'
 load './archaic_do_loop.rb'
 load './fortran_parser.rb'
 
-@logger = Logger.new(STDERR)
-@logger.level = Logger::INFO
-
 if ARGV.size != 1
   STDERR.puts "Usage: #$0 INFILE"
   exit 1
 end
 
-tree = parse_file(ARGV[0])
+parser = FortranParser.new
+tree = parser.parse_file(ARGV[0])
 
 def print_tree(tree)
   puts "digraph AST {"
