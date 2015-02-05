@@ -19,4 +19,6 @@ tree = parser.parse_file(ARGV[0])
 
 # puts subtree
 # puts subtree.to_cpp
+
+# puts tree
 puts tree.to_cpp

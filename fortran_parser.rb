@@ -1,5 +1,7 @@
 load './archaic_do_loop.rb'
+load './assignment_node.rb'
 load './default_node.rb'
+load './empty_node.rb'
 load './if_then_else_node.rb'
 load './root_node.rb'
 load './select_node.rb'
@@ -142,9 +144,7 @@ class FortranParser
 
     case
       # passive nodes
-    when line =~ /^\s*$/
-      new_node = DefaultNode.new(line_counter, :empty,      new_indentation, line.chomp, comments)
-      stack.last << new_node
+    when EmptyNode.accept(line, stack, line_counter, new_indentation, comments)
     when line =~ /^#/
       new_node = DefaultNode.new(line_counter, :preproc,    new_indentation, line.chomp, comments)
       stack.last << new_node
@@ -305,10 +305,7 @@ class FortranParser
     when line =~ /^\s*allocate\(.*\)/i
       new_node = DefaultNode.new(line_counter, :allocate,   new_indentation, line.chomp, comments)
       stack.last << new_node
-    when line =~ /^(\s\d+)?\s*([^,]+(,[^,]+)*)(\(:?\w*\))?\s*=/i
-      new_node = DefaultNode.new(line_counter, :assignment, new_indentation, line.chomp, comments)
-      stack.last << new_node
-
+    when AssignmentNode.accept(line, stack, line_counter, new_indentation, comments)
     else
       raise "encounted unknown node in line #{line_counter}: »#{line}«"
     end
