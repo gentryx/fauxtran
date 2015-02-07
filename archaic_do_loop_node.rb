@@ -6,7 +6,7 @@ class ArchaicDoLoopNode < SyntaxNode
       if !$2.nil?
         new_node = ArchaicDoLoopNode.new(line_counter, :archaic_do_loop, new_indentation, line.chomp, comments)
       else
-        new_node = DefaultNode.new(line_counter, :do_loop, new_indentation, line.chomp, comments)
+        new_node = DoLoopNode.new(line_counter, :do_loop, new_indentation, line.chomp, comments)
       end
       stack.last << new_node
       stack << new_node
@@ -18,12 +18,12 @@ class ArchaicDoLoopNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts "// #{comment}"
+      io.puts @indent + "// #{comment}"
     end
 
-    io.puts "for (fixme) {"
+    io.puts @indent + "for (fixme) {"
     @children.each { |node| node.to_cpp(io) }
-    io.puts "}"
+    io.puts @indent + "}"
 
     return io.string
   end

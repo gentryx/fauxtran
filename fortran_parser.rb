@@ -1,12 +1,20 @@
 load './archaic_do_loop_node.rb'
 load './assignment_node.rb'
 load './default_node.rb'
+load './do_loop_node.rb'
 load './empty_node.rb'
+load './function_node.rb'
 load './if_then_else_node.rb'
+load './implicit_node.rb'
+load './module_node.rb'
+load './preprocessor_node.rb'
+load './program_node.rb'
 load './root_node.rb'
 load './select_node.rb'
 load './subroutine_node.rb'
 load './syntax_node.rb'
+load './use_node.rb'
+load './where_loop_node.rb'
 
 class FortranParser
   def initialize
@@ -135,35 +143,13 @@ class FortranParser
     case
       # passive nodes
     when EmptyNode.accept(line, stack, line_counter, new_indentation, comments)
-    when line =~ /^#/
-      new_node = DefaultNode.new(line_counter, :preproc,    new_indentation, line.chomp, comments)
-      stack.last << new_node
+    when PreprocessorNode.accept(line, stack, line_counter, new_indentation, comments)
 
       # nesting:
-    when line =~ /^\s*module (\w+)/i
-      new_node = DefaultNode.new(line_counter, :module, new_indentation, line.chomp, comments)
-      stack.last << new_node
-      stack << new_node
-    when line =~ /^\s*end module (\w+)/i
-      SyntaxNode.terminate_clause(stack, :module, line, comments)
-
-    when line =~ /^\s*program (\w+)/i
-      new_node = DefaultNode.new(line_counter, :program, new_indentation, line.chomp, comments)
-      stack.last << new_node
-      stack << new_node
-    when line =~ /^\s*end program (\w+)/i
-      SyntaxNode.terminate_clause(stack, :program, line, comments)
-
-    when line =~ /^\s*function (\w+)\s*\((.*)\)/i
-      new_node = DefaultNode.new(line_counter, :function, new_indentation, line.chomp, comments)
-      stack.last << new_node
-      stack << new_node
-    when line =~ /^\s*end function (\w+)/i
-      SyntaxNode.terminate_clause(stack, :function, line, comments)
-
+    when ModuleNode.accept(line, stack, line_counter, new_indentation, comments)
+    when ProgramNode.accept(line, stack, line_counter, new_indentation, comments)
+    when FunctionNode.accept(line, stack, line_counter, new_indentation, comments)
     when SubroutineNode.accept(line, stack, line_counter, new_indentation, comments)
-    when line =~ /^\s*end subroutine (\w+)/i
-      SyntaxNode.terminate_clause(stack, :subroutine, line, comments)
 
     when line =~ /^\s+select case\(.*\)\s*$/i
       new_node = SelectNode.new(line_counter, :select, new_indentation, line.chomp, comments)
@@ -198,27 +184,13 @@ class FortranParser
       SyntaxNode.terminate_clause(stack, :if, line, comments)
       # puts "\033[1;31m KPOP! \033[0;37m"
 
-    when line =~ /^\s*do while (.+)/i
-      new_node = DefaultNode.new(line_counter, :do_loop, new_indentation, line.chomp, comments)
-      stack.last << new_node
-      stack << new_node
+    when DoLoopNode.accept(       line, stack, line_counter, new_indentation, comments)
     when ArchaicDoLoopNode.accept(line, stack, line_counter, new_indentation, comments)
-    when line =~ /^\s*where (.+)/i
-      new_node = DefaultNode.new(line_counter, :where_loop, new_indentation, line.chomp, comments)
-      stack.last << new_node
-      stack << new_node
-      # puts "\033[1;32m PUSH! \033[0;37m"
-    when line =~ /^\s*end where/i
-      SyntaxNode.terminate_clause(stack, :where_loop, line, comments)
-      # puts "\033[1;31m KPOP! \033[0;37m"
-
+    when WhereLoopNode.accept(    line, stack, line_counter, new_indentation, comments)
       # subroutine header:
-    when line =~ /^\s+implicit none/i
-      new_node = DefaultNode.new(line_counter, :implicit,   new_indentation, line.chomp, comments)
-      stack.last << new_node
-    when line =~ /^\s*use,? (\w+)/i
-      new_node = DefaultNode.new(line_counter, :using,      new_indentation, line.chomp, comments)
-      stack.last << new_node
+    when ImplicitNode.accept(     line, stack, line_counter, new_indentation, comments)
+    when UseNode.accept(          line, stack, line_counter, new_indentation, comments)
+
 
       # definitions:
       #fixme: unite these definition patterns
