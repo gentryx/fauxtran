@@ -1,6 +1,27 @@
 load './syntax_node.rb'
 
 class SelectNode < SyntaxNode
+  def self.accept(line, stack, line_counter, new_indentation, comments)
+    if line =~ /^\s+select case\(.*\)\s*$/i
+      new_node = SelectNode.new(line_counter, :select, new_indentation, line.chomp, comments)
+      stack.last << new_node
+      stack << new_node
+      return true
+    end
+
+    if line =~ /^\s+case\((.+)\)\s*$/i
+      stack.last.add_case($1)
+      return true
+    end
+
+    if line =~ /^\s+end\s+select\s*$/i
+      SyntaxNode.terminate_clause(stack, :select, line, comments)
+      return true
+    end
+
+    return false
+  end
+
   def initialize(line_counter, type, indentation, cargo, comments)
     super(line_counter, type, indentation, cargo, comments)
     @case_conditions = []
