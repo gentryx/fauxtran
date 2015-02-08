@@ -135,42 +135,41 @@ class FortranParser
     @logger.debug "at line #{line_counter}:#{stack.last.indentation} »#{line.chomp}«"
     new_indentation = stack.last.indentation + 1
 
-    case
-      # passive nodes
-    when EmptyNode.accept(        line, stack, line_counter, new_indentation, comments)
-    when PreprocessorNode.accept( line, stack, line_counter, new_indentation, comments)
-      # nesting:
-    when ModuleNode.accept(       line, stack, line_counter, new_indentation, comments)
-    when ProgramNode.accept(      line, stack, line_counter, new_indentation, comments)
-    when FunctionNode.accept(     line, stack, line_counter, new_indentation, comments)
-    when SubroutineNode.accept(   line, stack, line_counter, new_indentation, comments)
-    when SelectNode.accept(       line, stack, line_counter, new_indentation, comments)
-    when IfThenElseNode.accept(   line, stack, line_counter, new_indentation, comments, self)
-    when DoLoopNode.accept(       line, stack, line_counter, new_indentation, comments)
-    when ArchaicDoLoopNode.accept(line, stack, line_counter, new_indentation, comments)
-    when WhereLoopNode.accept(    line, stack, line_counter, new_indentation, comments)
-      # subroutine header:
-    when ImplicitNode.accept(     line, stack, line_counter, new_indentation, comments)
-    when UseNode.accept(          line, stack, line_counter, new_indentation, comments)
-      # definitions:
-    when DefinitionNode.accept(   line, stack, line_counter, new_indentation, comments)
-      # control flow
-    when CallNode.accept(         line, stack, line_counter, new_indentation, comments)
-    when StopNode.accept(         line, stack, line_counter, new_indentation, comments)
-    when ReturnNode.accept(       line, stack, line_counter, new_indentation, comments)
-    when CycleNode.accept(        line, stack, line_counter, new_indentation, comments)
-    when GotoNode.accept(         line, stack, line_counter, new_indentation, comments)
-    when ContinueNode.accept(     line, stack, line_counter, new_indentation, comments)
-      # "normal" statements
-    when FormatNode.accept(       line, stack, line_counter, new_indentation, comments)
-    when ReadNode.accept(         line, stack, line_counter, new_indentation, comments)
-    when WriteNode.accept(        line, stack, line_counter, new_indentation, comments)
-    when PrintNode.accept(        line, stack, line_counter, new_indentation, comments)
-    when AllocateNode.accept(     line, stack, line_counter, new_indentation, comments)
-    when AssignmentNode.accept(   line, stack, line_counter, new_indentation, comments)
-    else
-      raise "encounted unknown node in line #{line_counter}: »#{line}«"
-    end
+    args = [line, stack, line_counter, new_indentation, comments]
+    # passive nodes
+    return if EmptyNode.accept(        *args)
+    return if PreprocessorNode.accept( *args)
+    # nesting:
+    return if ModuleNode.accept(       *args)
+    return if ProgramNode.accept(      *args)
+    return if FunctionNode.accept(     *args)
+    return if SubroutineNode.accept(   *args)
+    return if SelectNode.accept(       *args)
+    return if IfThenElseNode.accept(   *args, self)
+    return if DoLoopNode.accept(       *args)
+    return if ArchaicDoLoopNode.accept(*args)
+    return if WhereLoopNode.accept(    *args)
+    # subroutine header:
+    return if ImplicitNode.accept(     *args)
+    return if UseNode.accept(          *args)
+    # definitions:
+    return if DefinitionNode.accept(   *args)
+    # control flow
+    return if CallNode.accept(         *args)
+    return if StopNode.accept(         *args)
+    return if ReturnNode.accept(       *args)
+    return if CycleNode.accept(        *args)
+    return if GotoNode.accept(         *args)
+    return if ContinueNode.accept(     *args)
+    # "normal" statements
+    return if FormatNode.accept(       *args)
+    return if ReadNode.accept(         *args)
+    return if WriteNode.accept(        *args)
+    return if PrintNode.accept(        *args)
+    return if AllocateNode.accept(     *args)
+    return if AssignmentNode.accept(   *args)
+
+    raise "encounted unknown node in line #{line_counter}: »#{line}«"
   end
 
 end
