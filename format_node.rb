@@ -16,7 +16,7 @@ class FormatNode < SyntaxNode
       io.puts @indent + "// #{comment}"
     end
 
-    io.puts @cargo
+    io.puts @indent + "// FORMAT: #@cargo"
 
     return io.string
   end
