@@ -22,7 +22,19 @@ class DoLoopNode < SyntaxNode
       io.puts @indent + "// #{comment}"
     end
 
-    io.puts @indent +  "for (fixme #{@cargo}) {"
+    buf = ""
+    if @cargo.class == Array
+      buf += "int #{@cargo[1]} = #{@cargo[2]}; #{@cargo[1]} <= #{@cargo[3]}; "
+      if @cargo[4].nil?
+        buf += "++#{@cargo[1]}"
+      else
+        buf += "#{@cargo[1]} += #{@cargo[4]}"
+      end
+    else
+      buf = "fixme #{@cargo}"
+    end
+
+    io.puts @indent +  "for (#{buf}) {"
     @children.each { |node| node.to_cpp(io) }
     io.puts @indent +  "}"
 
