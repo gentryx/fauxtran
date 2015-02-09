@@ -6,7 +6,13 @@ class ArchaicDoLoopNode < SyntaxNode
       if !$2.nil?
         new_node = ArchaicDoLoopNode.new(line_counter, :archaic_do_loop, new_indentation, line.chomp, comments)
       else
-        new_node = DoLoopNode.new(line_counter, :do_loop, new_indentation, line.chomp, comments)
+        # complex matching to extract loop boundaries and counter increment (optional third argument)
+        if line =~ /do\s+(\w+\s+)?(\w+)\s*=\s*(#{@@braced_expression}),(#{@@braced_expression})(,(#{@@braced_expression}))?/i
+          # drawback of complex match: non-intuitive match indices
+          new_node = DoLoopNode.new(line_counter, :do_loop, new_indentation, [$1, $2, $3, $174, $346], comments)
+        else
+          raise "failed do loop detection"
+        end
       end
       stack.last << new_node
       stack << new_node

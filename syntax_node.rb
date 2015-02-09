@@ -4,6 +4,20 @@ class SyntaxNode
   attr_reader :line_counter
   attr_accessor :cargo
 
+  # some expressions can be tricky due to nested brackets. regular
+  # expressions can't really match them as regular expressions are
+  # essentially finite state machines while brackets may be nested
+  # arbitrarily often. we cheat and assume at most k levels of nesting
+  # (given by the for-loop below).
+  fragment = '[^\(\)\,\n]*'
+  4.times do
+    fragment = '(' + fragment + '\(' + fragment + "(,#{fragment})*" + '\))*' + fragment
+  end
+  @@braced_expression = fragment
+
+  expression = '^\s*if\s*\((' + @@braced_expression + ')\)\s*(.*)$'
+  @@if_expression = /#{expression}/i
+
   def self.terminate_clause(stack, clause, line, comments)
     stack.last.add_comments(comments)
 
