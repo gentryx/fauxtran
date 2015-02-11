@@ -2,7 +2,7 @@ load './syntax_node.rb'
 
 class FormatNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments)
-    if line =~ /^\s*\d*\s*format\(.*\)/i
+    if line =~ /^\s*\d*\s*format\s*\(.*\)\s*$/i
       new_node = FormatNode.new(line_counter, :format,    new_indentation, line.chomp, comments)
       stack.last << new_node
       return true
