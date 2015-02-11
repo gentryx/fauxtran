@@ -4,6 +4,7 @@ load './assignment_node.rb'
 load './call_node.rb'
 load './continue_node.rb'
 load './cycle_node.rb'
+load './data_node.rb'
 load './deallocate_node.rb'
 load './default_node.rb'
 load './definition_node.rb'
@@ -87,6 +88,7 @@ class FortranParser
     # "normal" statements
     return if FormatNode.accept(       *args)
     return if IncludeNode.accept(      *args)
+    return if DataNode.accept(         *args)
     return if ReadNode.accept(         *args)
     return if WriteNode.accept(        *args)
     return if PrintNode.accept(        *args)
