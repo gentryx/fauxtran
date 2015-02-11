@@ -22,7 +22,7 @@ class ModuleNode < SyntaxNode
       io.puts @indent + "// #{comment}"
     end
 
-    io.puts @indent +  "for (fixme #{@cargo}) {"
+    io.puts @indent +  "namespace #{@cargo} {"
     @children.each { |node| node.to_cpp(io) }
     io.puts @indent +  "}"
 

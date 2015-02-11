@@ -16,7 +16,7 @@ class UseNode < SyntaxNode
       io.puts @indent + "// #{comment}"
     end
 
-    io.puts @indent + "// using #@cargo"
+    io.puts @indent + "using namespace #@cargo;"
 
     return io.string
   end
