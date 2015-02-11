@@ -24,7 +24,7 @@ class DoLoopNode < SyntaxNode
 
     buf = ""
     if @cargo.class == Array
-      buf += "int #{@cargo[1]} = #{@cargo[2]}; #{@cargo[1]} <= #{@cargo[3]}; "
+      buf += "#{@cargo[1]} = #{@cargo[2]}; #{@cargo[1]} <= #{@cargo[3]}; "
       if @cargo[4].nil?
         buf += "++#{@cargo[1]}"
       else
