@@ -2,7 +2,7 @@ load './syntax_node.rb'
 
 class FunctionNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments)
-    if line =~ /^\s*function (\w+)\s*\((.*)\)/i
+    if line =~ /^\s*(.*)\s*function (\w+)\s*\((.*)\)/i
       new_node = FunctionNode.new(line_counter, :function, new_indentation, "#{$1}(#{$2})", comments)
       stack.last << new_node
       stack << new_node
