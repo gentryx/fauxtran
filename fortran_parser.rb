@@ -4,6 +4,7 @@ load './assignment_node.rb'
 load './call_node.rb'
 load './continue_node.rb'
 load './cycle_node.rb'
+load './deallocate_node.rb'
 load './default_node.rb'
 load './definition_node.rb'
 load './do_loop_node.rb'
@@ -88,6 +89,7 @@ class FortranParser
     return if WriteNode.accept(        *args)
     return if PrintNode.accept(        *args)
     return if AllocateNode.accept(     *args)
+    return if DeallocateNode.accept(   *args)
     return if AssignmentNode.accept(   *args)
 
     raise "encounted unknown node in line #{line_counter}: »#{line}«"
