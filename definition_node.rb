@@ -2,7 +2,7 @@ load './syntax_node.rb'
 
 class DefinitionNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments)
-    if line =~ /^\s*(((character|complex|integer|real|logical)(\([^\)\n]+\))?)(,\s*\w+(\([^\)\n]+\))?)*)\s*(::)?\s+(\w+(\([^\)\n]*\))?(\s*,\s*\w+(\([^\)\n]+\))?)*)\s*$/i
+    if line =~ /^\s*(((character|complex|integer|real|logical)\*?(\([^\)\n]+\))?)(,\s*\w+(\([^\)\n]+\))?)*)\s*(::)?\s+(\w+(\([^\)\n]*\))?(\s*,\s*\w+(\([^\)\n]+\))?)*)\s*$/i
 
       type = $1.chomp
       names = $8.chomp
