@@ -19,7 +19,7 @@ class DoLoopNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
     buf = ""
@@ -34,9 +34,9 @@ class DoLoopNode < SyntaxNode
       buf = "fixme #{@cargo}"
     end
 
-    io.puts @indent +  "for (#{buf}) {"
+    io.puts indent +  "for (#{buf}) {"
     @children.each { |node| node.to_cpp(io) }
-    io.puts @indent +  "}"
+    io.puts indent +  "}"
 
     return io.string
   end

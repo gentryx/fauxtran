@@ -13,10 +13,10 @@ class FormatNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
-    io.puts @indent + "// FORMAT: #@cargo"
+    io.puts indent + "// FORMAT: #@cargo"
 
     return io.string
   end

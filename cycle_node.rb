@@ -13,10 +13,10 @@ class CycleNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
-    io.puts @indent + "// CYCLE" + @cargo
+    io.puts indent + "// CYCLE" + @cargo
 
     return io.string
   end

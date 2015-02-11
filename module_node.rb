@@ -19,12 +19,12 @@ class ModuleNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
-    io.puts @indent +  "namespace #{@cargo} {"
+    io.puts indent +  "namespace #{@cargo} {"
     @children.each { |node| node.to_cpp(io) }
-    io.puts @indent +  "}"
+    io.puts indent +  "}"
 
     return io.string
   end

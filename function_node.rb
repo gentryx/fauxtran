@@ -19,12 +19,12 @@ class FunctionNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
-    io.puts @indent + "void #@cargo {"
+    io.puts indent + "void #@cargo {"
     @children.each { |node| node.to_cpp(io) }
-    io.puts @indent + "}"
+    io.puts indent + "}"
 
     return io.string
   end

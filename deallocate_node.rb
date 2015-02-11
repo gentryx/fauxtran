@@ -13,10 +13,10 @@ class DeallocateNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
-    io.puts @indent + "free(#@cargo);"
+    io.puts indent + "free(#@cargo);"
 
     return io.string
   end

@@ -19,10 +19,10 @@ class ProgramNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
-    io.puts @indent + "// fixme #@cargo"
+    io.puts indent + "// fixme #@cargo"
     @children.each { |node| node.to_cpp(io) }
 
     return io.string

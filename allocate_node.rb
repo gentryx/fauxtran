@@ -13,10 +13,10 @@ class AllocateNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
-    io.puts @indent + "malloc(#@cargo, fixme);"
+    io.puts indent + "malloc(#@cargo, fixme);"
 
     return io.string
   end

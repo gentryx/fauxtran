@@ -50,18 +50,18 @@ class IfThenElseNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
-    io.puts @indent + "if (#@cargo) {"
+    io.puts indent + "if (#@cargo) {"
     @children.each { |node| node.to_cpp(io) }
 
     if @else
-      io.puts @indent + "} else {"
+      io.puts indent + "} else {"
       @else.each { |node| node.to_cpp(io) }
     end
 
-    io.puts @indent + "}"
+    io.puts indent + "}"
 
     return io.string
   end
@@ -97,7 +97,7 @@ class IfThenElseNode < SyntaxNode
     buf.puts super
 
     if @else
-      buf.puts @indentation.to_s.rjust(2) + @indent + ":else"
+      buf.puts indentation.to_s.rjust(2) + @indent + ":else"
 
       @else.each do |c|
         buf.puts c.to_s

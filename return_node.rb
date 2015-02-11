@@ -13,10 +13,10 @@ class ReturnNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
-    io.puts @indent + "// RETURN" + @cargo
+    io.puts indent + "// RETURN" + @cargo
 
     return io.string
   end

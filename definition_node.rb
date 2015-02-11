@@ -36,10 +36,10 @@ class DefinitionNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
-    io.puts @indent + "#{@cargo[:type]} #{@cargo[:names]};"
+    io.puts indent + "#{@cargo[:type]} #{@cargo[:names]};"
 
     return io.string
   end

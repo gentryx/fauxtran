@@ -14,7 +14,7 @@ class EmptyNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
     io.puts unless @comments.size > 0

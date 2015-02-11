@@ -14,9 +14,9 @@ class AssignmentNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
 
-    io.puts @indent + @cargo + ";"
+    io.puts indent + @cargo + ";"
   end
 end

@@ -34,7 +34,6 @@ class SyntaxNode
     @children = []
     @indentation = indentation
     @cargo = cargo
-    @indent = " " * (2 * @indentation)
 
     @tag = nil
     if @type == :module
@@ -75,6 +74,10 @@ class SyntaxNode
     end
 
     return nil
+  end
+
+  def indent(level=@indentation)
+    " " * (2 * level)
   end
 
   # returns a string representation in GraphView's DOT format

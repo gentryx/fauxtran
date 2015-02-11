@@ -40,17 +40,17 @@ class SelectNode < SyntaxNode
 
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
-      io.puts @indent + "// #{comment}"
+      io.puts indent + "// #{comment}"
     end
-    io.puts @indent + "switch (fixme) {"
+    io.puts indent + "switch (fixme) {"
 
     @case_conditions.size.times do |i|
-      io.puts @indent + @case_conditions[i]
+      io.puts indent + @case_conditions[i]
       @case_statements[i].each { |node| node.to_cpp(io) }
-      io.puts @indent + "break;"
+      io.puts indent + "break;"
     end
 
-    io.puts @indent + "}"
+    io.puts indent + "}"
 
     return io.string
   end
@@ -92,7 +92,7 @@ class SelectNode < SyntaxNode
     buf.puts super
 
     if @else
-      buf.puts @indentation.to_s.rjust(2) + @indent + ":else"
+      buf.puts indentation.to_s.rjust(2) + @indent + ":else"
 
       @else.each do |c|
         buf.puts c.to_s
