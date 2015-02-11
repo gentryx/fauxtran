@@ -2,15 +2,20 @@ load './syntax_node.rb'
 
 class SelectNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments)
-    if line =~ /^\s+select case\(.*\)\s*$/i
+    if line =~ /^\s+select case\s*\(.*\)\s*$/i
       new_node = SelectNode.new(line_counter, :select, new_indentation, line.chomp, comments)
       stack.last << new_node
       stack << new_node
       return true
     end
 
-    if line =~ /^\s+case\((.+)\)\s*$/i
-      stack.last.add_case($1)
+    if line =~ /^\s+case\s*\((.+)\)\s*$/i
+      stack.last.add_case("case #$1:")
+      return true
+    end
+
+    if line =~ /^\s+case\s*default\s*$/i
+      stack.last.add_case("else")
       return true
     end
 
@@ -40,7 +45,7 @@ class SelectNode < SyntaxNode
     io.puts "switch (fixme) {"
 
     @case_conditions.size.times do |i|
-      io.puts "case #{@case_conditions[i]}:"
+      io.puts @case_conditions[i]
       @case_statements[i].each { |node| node.to_cpp(io) }
       io.puts "break;"
     end
