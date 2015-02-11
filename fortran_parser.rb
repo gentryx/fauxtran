@@ -14,6 +14,7 @@ load './function_node.rb'
 load './goto_node.rb'
 load './if_then_else_node.rb'
 load './implicit_node.rb'
+load './include_node.rb'
 load './module_node.rb'
 load './preprocessor_node.rb'
 load './print_node.rb'
@@ -85,6 +86,7 @@ class FortranParser
     return if ContinueNode.accept(     *args)
     # "normal" statements
     return if FormatNode.accept(       *args)
+    return if IncludeNode.accept(      *args)
     return if ReadNode.accept(         *args)
     return if WriteNode.accept(        *args)
     return if PrintNode.accept(        *args)
