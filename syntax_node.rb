@@ -1,4 +1,5 @@
 class SyntaxNode
+  attr_reader :children
   attr_reader :indentation
   attr_reader :type
   attr_reader :line_counter
@@ -53,10 +54,10 @@ class SyntaxNode
     end
     if @type == :assignment
       # fixme: use grammar here
-      @cargo =~ /\s*(.*)/i
-      assignment = $1
-      assignment.gsub!(/"/, "")
-      @tag = assignment
+      # @cargo =~ /\s*(.*)/i
+      # assignment = $1
+      # assignment.gsub!(/"/, "")
+      # @tag = assignment
     end
 
     @comments = comments
@@ -76,8 +77,20 @@ class SyntaxNode
     return nil
   end
 
+  def prune(recurse=true)
+    @children.delete_if { |child| yield(child) }
+
+    return if !recurse
+
+    @children.each do |child|
+      child.prune(recurse) do |child|
+        yield(child)
+      end
+    end
+  end
+
   def indent(level=@indentation)
-    " " * (2 * level)
+    " " * (2 * [0, level - 1].max)
   end
 
   # returns a string representation in GraphView's DOT format
@@ -109,9 +122,9 @@ class SyntaxNode
 
   def to_s
     buf = StringIO.new
-    headline = @indentation.to_s.rjust(2) + @indent + ":" + @type.to_s.ljust(10)
+    headline = @indentation.to_s.rjust(2) + indent + ":" + @type.to_s.ljust(10)
     if @cargo
-      headline += " => »" + @cargo + "«"
+      headline += " => »" + @cargo.to_s + "«"
     end
     buf.puts headline
 
