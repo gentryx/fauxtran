@@ -2,9 +2,12 @@ load './syntax_node.rb'
 
 class AssignmentNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments)
-    if line =~ /^(\s\d+)?\s*(([^,]+(,[^,]+)*)(\(:?\w*\))?\s*=\s*.*)/i
-      cargo = $2.gsub(/%/, "_").chomp
-      new_node = AssignmentNode.new(line_counter, :assignment, new_indentation, cargo.chomp, comments)
+    if line =~ /^(\s\d+)?\s*((([^,]+(,[^,]+)*)(\(:?\w*\))?)\s*=\s*(.*))/i
+      cargo = [
+        $3,
+        $7]
+#      .gsub(/%/, "_").strip
+      new_node = AssignmentNode.new(line_counter, :assignment, new_indentation, cargo, comments)
       stack.last << new_node
       return true
     end
@@ -17,6 +20,6 @@ class AssignmentNode < SyntaxNode
       io.puts indent + "// #{comment}"
     end
 
-    io.puts indent + @cargo + ";"
+    io.puts indent + @cargo[0] + " = " + @cargo[1] + ";"
   end
 end
