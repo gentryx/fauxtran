@@ -13,6 +13,23 @@ end
 parser = FortranParser.new
 tree = parser.parse_file(ARGV[0])
 
+
+tree.prune do |node|
+  (node.type == :assignment) && (node.cargo[0] =~ /GRID/)
+end
+
+tree.prune do |node|
+  (node.type == :do_loop) && node.children.empty?
+end
+
+tree.prune do |node|
+  (node.type == :do_loop) && node.children.empty?
+end
+
+tree.prune do |node|
+  (node.type == :do_loop) && node.children.empty?
+end
+
 # puts tree.to_s
 # print_tree tree
 # subtree = tree[[[:module, "MG_STENCIL_COMPS_MOD"], [:subroutine, "MG_STENCIL_2D5PT"]]]
