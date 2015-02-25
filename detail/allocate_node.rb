@@ -1,4 +1,4 @@
-load './syntax_node.rb'
+load './detail/syntax_node.rb'
 
 class AllocateNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments)

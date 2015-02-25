@@ -1,4 +1,4 @@
-load './syntax_node.rb'
+load './detail/syntax_node.rb'
 
 class DefaultNode < SyntaxNode
   def to_cpp(io = StringIO.new)
