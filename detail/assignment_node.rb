@@ -3,10 +3,12 @@ load './detail/syntax_node.rb'
 class AssignmentNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments)
     if line =~ /^(\s\d+)?\s*((([^,]+(,[^,]+)*)(\(:?\w*\))?)\s*=\s*(.*))/i
-      cargo = [
-        $3,
-        $7]
-#      .gsub(/%/, "_").strip
+      cargo = [$3, $7]
+
+      # fixme: quick hack
+      cargo[0].gsub!(/%/, "_")
+      cargo[1].gsub!(/%/, "_")
+
       new_node = AssignmentNode.new(line_counter, :assignment, new_indentation, cargo, comments)
       stack.last << new_node
       return true

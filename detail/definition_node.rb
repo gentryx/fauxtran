@@ -20,6 +20,9 @@ class DefinitionNode < SyntaxNode
         type = "double"
       when "logical"
         type = "bool"
+      when "real(kind=mg_real)"
+      # fixme: quick'n'dirty hack
+        type = "double"
       else
         type = "// FIXME: definition #{type}"
       end
