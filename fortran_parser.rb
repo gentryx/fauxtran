@@ -32,9 +32,10 @@ load './detail/where_loop_node.rb'
 load './detail/write_node.rb'
 
 class FortranParser
-  def initialize
+  def initialize(user_defined_nodes=[])
     @logger = Logger.new(STDERR)
     @logger.level = Logger::INFO
+    @user_defined_nodes = user_defined_nodes
   end
 
   def parse_file(infile)
@@ -95,6 +96,10 @@ class FortranParser
     return if AllocateNode.accept(     *args)
     return if DeallocateNode.accept(   *args)
     return if AssignmentNode.accept(   *args)
+
+    @user_defined_nodes.each do |node|
+      return if node.accept(*args)
+    end
 
     raise "encounted unknown node in line #{line_counter}: »#{line}«"
   end

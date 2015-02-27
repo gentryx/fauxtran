@@ -10,7 +10,7 @@ class SubroutineNode < SyntaxNode
       cargo.params = $2.split(",").map { |param| param.strip }
       cargo.template_params = []
       cargo.params.size.times do |i|
-        cargo.template_params << "typename TYPE_#{i}"
+        cargo.template_params << "TYPE_#{i}"
       end
 
       new_node = SubroutineNode.new(line_counter, :subroutine, new_indentation, cargo, comments)
@@ -36,7 +36,12 @@ class SubroutineNode < SyntaxNode
     @cargo.params.size.times do |i|
       typed_params << "#{@cargo.template_params[i]} #{@cargo.params[i]}"
     end
-    io.puts indent + "template<#{@cargo.template_params.join(', ')}>"
+
+    template_params = @cargo.template_params.map do |param|
+      "typename #{param}"
+    end
+
+    io.puts indent + "template<#{template_params.join(', ')}>"
     io.puts indent + "void #{@cargo.name}(#{typed_params.join(', ')})"
     io.puts indent + "{"
     @children.each { |node| node.to_cpp(io) }
