@@ -48,6 +48,18 @@ class IfThenElseNode < SyntaxNode
     @else = []
   end
 
+  def each
+    offspring = @children
+    offspring += @else if !@else.nil?
+
+    offspring.each do |child|
+      yield(child)
+      child.each do |grandchild|
+        yield(grandchild)
+      end
+    end
+  end
+
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
       io.puts indent + "// #{comment}"

@@ -38,6 +38,18 @@ class SelectNode < SyntaxNode
     @case_statements << []
   end
 
+  def each
+    @case_statements.each do |list|
+      list.each do |child|
+        yield(child)
+
+        child.each do |grandchild|
+          yield(grandchild)
+        end
+      end
+    end
+  end
+
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
       io.puts indent + "// #{comment}"

@@ -77,6 +77,15 @@ class SyntaxNode
     return nil
   end
 
+  def each
+    @children.each do |child|
+      yield(child)
+      child.each do |grandchild|
+        yield(grandchild)
+      end
+    end
+  end
+
   def prune(recurse=true)
     @children.delete_if { |child| yield(child) }
 
