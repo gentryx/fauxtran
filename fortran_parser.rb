@@ -114,7 +114,7 @@ class FortranParser
       }
 
       case
-      when line =~ /^c(.*)/i
+      when (line =~ /^c(.*)/i) || (line =~ /^\s*!(.*)$/i)
         # we need to strip pure comment lines and append those to the
         # preceeding line to ensure continuation works correctly
         if raw_lines.size > 0
