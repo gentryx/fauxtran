@@ -13,7 +13,6 @@ end
 parser = FortranParser.new
 tree = parser.parse_file(ARGV[0])
 
-
 tree.prune do |node|
   (node.type == :assignment) && (node.cargo[0] =~ /GRID/)
 end

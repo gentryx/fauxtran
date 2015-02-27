@@ -1,9 +1,19 @@
+require 'ostruct'
 load './detail/syntax_node.rb'
 
 class SubroutineNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments)
-    if line =~ /^\s*subroutine ((\w+)\s*\((.*)\))\s*$/i
-      new_node = SubroutineNode.new(line_counter, :subroutine, new_indentation, $1.chomp, comments)
+    if line =~ /^\s*subroutine\s+(\w+)\s*\((.*)\)\s*$/i
+
+      cargo = OpenStruct.new
+      cargo.name = $1
+      cargo.params = $2.split(",").map { |param| param.strip }
+      cargo.template_params = []
+      cargo.params.size.times do |i|
+        cargo.template_params << "typename TYPE_#{i}"
+      end
+
+      new_node = SubroutineNode.new(line_counter, :subroutine, new_indentation, cargo, comments)
       stack.last << new_node
       stack << new_node
       return true
@@ -22,7 +32,12 @@ class SubroutineNode < SyntaxNode
       io.puts indent + "// #{comment}"
     end
 
-    io.puts indent + "void #@cargo"
+    typed_params = []
+    @cargo.params.size.times do |i|
+      typed_params << "#{@cargo.template_params[i]} #{@cargo.params[i]}"
+    end
+    io.puts indent + "template<#{@cargo.template_params.join(', ')}>"
+    io.puts indent + "void #{@cargo.name}(#{typed_params.join(', ')})"
     io.puts indent + "{"
     @children.each { |node| node.to_cpp(io) }
     io.puts indent + "}"
