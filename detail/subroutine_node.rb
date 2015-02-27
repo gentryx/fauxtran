@@ -27,6 +27,11 @@ class SubroutineNode < SyntaxNode
     return false
   end
 
+  def add_param(template_param, param)
+    @cargo.template_params << template_param
+    @cargo.params << param
+  end
+
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
       io.puts indent + "// #{comment}"

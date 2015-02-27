@@ -42,6 +42,22 @@ tree.prune do |node|
   (node.type == :do_loop) && node.children.empty?
 end
 
+tree.each do |node|
+  if (node.type == :subroutine) && (node.cargo.name =~ /MG_STENCIL_/)
+    node.add_param("NEIGHBORHOOD2", "WORK")
+    node.add_param("INT1",  "MG_PERF_NUM_ADDS")
+    node.add_param("INT2",  "MG_PERF_NUM_DIVIDES")
+    node.add_param("INT3",  "MG_PERF_NUM_COPY")
+    node.add_param("INT4",  "NX")
+    node.add_param("INT5",  "NY")
+    node.add_param("INT6",  "NZ")
+    node.add_param("INT7",  "FIVE")
+    node.add_param("INT8",  "NINE")
+    node.add_param("INT9",  "SEVEN")
+    node.add_param("INT10", "TWENTYSEVEN")
+   end
+end
+
 # puts tree.to_s
 # print_tree tree
 # subtree = tree[[[:module, "MG_STENCIL_COMPS_MOD"], [:subroutine, "MG_STENCIL_2D5PT"]]]
