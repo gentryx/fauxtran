@@ -43,7 +43,9 @@ tree.prune do |node|
 end
 
 tree.each do |node|
-  if (node.type == :subroutine) && (node.cargo.name =~ /MG_STENCIL_/)
+  if (node.type == :subroutine) && (node.name =~ /MG_STENCIL_/)
+    node.name = node.name + "_CPP"
+
     node.add_param("NEIGHBORHOOD2", "WORK")
     node.add_param("INT1",  "MG_PERF_NUM_ADDS")
     node.add_param("INT2",  "MG_PERF_NUM_DIVIDES")

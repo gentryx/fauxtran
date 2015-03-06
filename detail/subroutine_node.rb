@@ -27,6 +27,14 @@ class SubroutineNode < SyntaxNode
     return false
   end
 
+  def name
+    @cargo.name
+  end
+
+  def name=(new_name)
+    @cargo.name = new_name
+  end
+
   def add_param(template_param, param)
     @cargo.template_params << template_param
     @cargo.params << param
