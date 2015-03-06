@@ -23,13 +23,8 @@ class DoLoopNode < SyntaxNode
     end
 
     buf = ""
-    if @cargo.class == Array
-      buf += "#{@cargo[1]} = #{@cargo[2]}; #{@cargo[1]} <= #{@cargo[3]}; "
-      if @cargo[4].nil?
-        buf += "++#{@cargo[1]}"
-      else
-        buf += "#{@cargo[1]} += #{@cargo[4]}"
-      end
+    if @cargo.class == OpenStruct
+      buf += "#{@cargo.index} = #{@cargo.lower}; #{@cargo.index} <= #{@cargo.upper}; #{@cargo.index} += #{@cargo.stride}"
     else
       buf = "fixme #{@cargo}"
     end

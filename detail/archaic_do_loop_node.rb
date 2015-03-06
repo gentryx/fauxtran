@@ -9,7 +9,16 @@ class ArchaicDoLoopNode < SyntaxNode
         # complex matching to extract loop boundaries and counter increment (optional third argument)
         if line =~ /do\s+(\w+\s+)?(\w+)\s*=\s*(#{@@braced_expression}),(#{@@braced_expression})(,(#{@@braced_expression}))?/i
           # drawback of complex match: non-intuitive match indices
-          new_node = DoLoopNode.new(line_counter, :do_loop, new_indentation, [$1, $2, $3, $174, $346], comments)
+          cargo = OpenStruct.new
+          cargo.label = $1
+          cargo.index = $2
+          cargo.lower = $3
+          cargo.upper = $174
+          cargo.stride = $346
+          if cargo.stride.nil?
+            cargo.stride = 1
+          end
+          new_node = DoLoopNode.new(line_counter, :do_loop, new_indentation, cargo, comments)
         else
           raise "failed do loop detection"
         end

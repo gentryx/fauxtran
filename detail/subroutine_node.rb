@@ -35,6 +35,10 @@ class SubroutineNode < SyntaxNode
     @cargo.name = new_name
   end
 
+  def prefix_template_param(template_param)
+    @cargo.template_params = [template_param] + @cargo.template_params
+  end
+
   def add_param(template_param, param)
     @cargo.template_params << template_param
     @cargo.params << param
@@ -47,7 +51,8 @@ class SubroutineNode < SyntaxNode
 
     typed_params = []
     @cargo.params.size.times do |i|
-      typed_params << "#{@cargo.template_params[i]} #{@cargo.params[i]}"
+      type_index = i + @cargo.template_params.size - @cargo.params.size
+      typed_params << "#{@cargo.template_params[type_index]} #{@cargo.params[i]}"
     end
 
     template_params = @cargo.template_params.map do |param|
