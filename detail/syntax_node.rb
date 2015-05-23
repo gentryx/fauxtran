@@ -29,7 +29,7 @@ class SyntaxNode
     end
   end
 
-  def initialize(line_counter, type, indentation, cargo, comments, tag = "")
+  def initialize(line_counter, type, indentation, cargo, comments = [], tag = "")
     @line_counter = line_counter
     @type = type
     @children = []
@@ -171,5 +171,13 @@ class SyntaxNode
 
   def check_end(clause, line)
     return clause == @type
+  end
+
+  def unshift(node)
+    @children.unshift(node)
+  end
+
+  def push(node)
+    @children.push(node)
   end
 end
