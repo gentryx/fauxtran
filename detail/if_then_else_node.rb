@@ -1,4 +1,4 @@
-load './detail/syntax_node.rb'
+require_relative 'syntax_node'
 
 class IfThenElseNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments, parser)
@@ -65,7 +65,11 @@ class IfThenElseNode < SyntaxNode
       io.puts indent + "// #{comment}"
     end
 
-    io.puts indent + "if (#@cargo) {"
+    condition = @cargo
+    condition = condition.gsub(/\.eq\./i, " == ")
+    condition = condition.gsub(/\.gt\./i, " >  ")
+
+    io.puts indent + "if (#{condition}) {"
     @children.each { |node| node.to_cpp(io) }
 
     if @else
@@ -109,7 +113,7 @@ class IfThenElseNode < SyntaxNode
     buf.puts super
 
     if @else
-      buf.puts indentation.to_s.rjust(2) + @indent + ":else"
+      buf.puts indentation.to_s.rjust(2) + indent + ":else"
 
       @else.each do |c|
         buf.puts c.to_s

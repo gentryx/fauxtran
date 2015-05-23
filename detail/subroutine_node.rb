@@ -1,5 +1,5 @@
 require 'ostruct'
-load './detail/syntax_node.rb'
+require_relative 'syntax_node'
 
 class SubroutineNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments)

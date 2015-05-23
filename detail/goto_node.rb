@@ -1,4 +1,4 @@
-load './detail/syntax_node.rb'
+require_relative 'syntax_node'
 
 class GotoNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments)

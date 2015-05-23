@@ -1,9 +1,9 @@
-load './detail/syntax_node.rb'
+require_relative 'syntax_node'
 
 class DoLoopNode < SyntaxNode
   def self.accept(line, stack, line_counter, new_indentation, comments)
     if line =~ /^\s*do while (.+)$/i
-      new_node = DoLoopNode.new(line_counter, :do_loop, new_indentation, $1.chomp, comments)
+      new_node = DoLoopNode.new(line_counter, :do_loop, new_indentation, $1.chomp, comments, $1.chomp)
       stack.last << new_node
       stack << new_node
       return true
@@ -15,6 +15,11 @@ class DoLoopNode < SyntaxNode
     end
 
     return false
+  end
+
+  def one_off_limits
+    @cargo.lower = "((#{cargo.lower}) - 1)"
+    @cargo.upper = "((#{cargo.upper}) - 1)"
   end
 
   def to_cpp(io = StringIO.new)

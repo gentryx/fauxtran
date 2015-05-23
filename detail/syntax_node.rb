@@ -29,14 +29,14 @@ class SyntaxNode
     end
   end
 
-  def initialize(line_counter, type, indentation, cargo, comments)
+  def initialize(line_counter, type, indentation, cargo, comments, tag = "")
     @line_counter = line_counter
     @type = type
     @children = []
     @indentation = indentation
     @cargo = cargo
+    @tag = tag
 
-    @tag = nil
     if @type == :module
       # fixme: use grammar here
       @cargo =~ /module\s+(\w+)/i
@@ -44,8 +44,7 @@ class SyntaxNode
     end
     if @type == :subroutine
       # fixme: use grammar here
-      @cargo =~ /subroutine\s+(\w+)/i
-      @tag = $1
+      @tag = @cargo.name
     end
     if @type == :call
       # fixme: use grammar here
@@ -58,6 +57,10 @@ class SyntaxNode
       # assignment = $1
       # assignment.gsub!(/"/, "")
       # @tag = assignment
+    end
+    if @type == :module
+      # fixme: use grammar hare
+      @tag = @cargo
     end
 
     @comments = comments
