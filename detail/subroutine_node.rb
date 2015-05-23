@@ -44,6 +44,38 @@ class SubroutineNode < SyntaxNode
     @cargo.params << param
   end
 
+  def add_param_with_guard_macros(template_param, param, arity = nil)
+    param_name = param + "_RAW"
+
+    decl_params = param_name
+    macro_params = ""
+    array_params = ""
+
+    if !arity.nil?
+      macro_params = []
+      array_params = []
+
+      (arity.size + 1).times do |i|
+        var_name = "param#{i}"
+        if (i == 0)
+          decl_params += "[]"
+        else
+          decl_params += "[#{arity[i - 1]}]"
+        end
+        macro_params << var_name
+        array_params << "[(#{var_name}) - 1]"
+      end
+
+      macro_params = macro_params.join(", ")
+      macro_params = "(#{macro_params})"
+      array_params = array_params.reverse.join("")
+    end
+
+    add_param(template_param, decl_params)
+    unshift(PreprocessorNode.new(-1, :preprocessor, @indentation + 1, "#define #{param}#{macro_params} #{param_name}#{array_params}"))
+    push(   PreprocessorNode.new(-1, :preprocessor, @indentation + 1, "#undef #{param}"))
+  end
+
   def to_cpp(io = StringIO.new)
     @comments.each do |comment|
       io.puts indent + "// #{comment}"

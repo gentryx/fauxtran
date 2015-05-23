@@ -85,23 +85,11 @@ tree = parser.parse_file(ARGV[0])
 module_tree = tree[[[:module, "GLOBAL_DATA"]]]
 kernel_tree = tree[[[:subroutine, "KERNEL"]]]
 
-kernel_tree.add_param("TYPE1", "N")
-kernel_tree.add_param("TYPE2", "*ALIVE_RAW")
-kernel_tree.add_param("TYPE3", "*NUMNEIGHBORS_RAW")
-kernel_tree.add_param("TYPE4", "(*NEIGHBORS_RAW)[20]")
-kernel_tree.add_param("TYPE5", "*NEW_ALIVE_RAW")
-
-kernel_tree.unshift(PreprocessorNode.new(-1, :preprocessor, 0, "#define ALIVE(i) ALIVE_RAW[(i) - 1]"))
-kernel_tree.push(PreprocessorNode.new(   -1, :preprocessor, 0, "#undef ALIVE"))
-
-kernel_tree.unshift(PreprocessorNode.new(-1, :preprocessor, 0, "#define NUMNEIGHBORS(i) NUMNEIGHBORS_RAW[(i) - 1]"))
-kernel_tree.push(PreprocessorNode.new(   -1, :preprocessor, 0, "#undef NUMNEIGHBORS_RAW"))
-
-kernel_tree.unshift(PreprocessorNode.new(-1, :preprocessor, 0, "#define NEIGHBORS(i, j) NEIGHBORS_RAW[(j) - 1][(i) - 1]"))
-kernel_tree.push(PreprocessorNode.new(   -1, :preprocessor, 0, "#undef NEIGHBORS"))
-
-kernel_tree.unshift(PreprocessorNode.new(-1, :preprocessor, 0, "#define NEW_ALIVE(i) NEW_ALIVE_RAW[(i) - 1]"))
-kernel_tree.push(PreprocessorNode.new(   -1, :preprocessor, 0, "#undef NEW_ALIVE"))
+kernel_tree.add_param_with_guard_macros("TYPE1", "N",     )
+kernel_tree.add_param_with_guard_macros("TYPE2", "ALIVE", [])
+kernel_tree.add_param_with_guard_macros("TYPE3", "NUMNEIGHBORS", [])
+kernel_tree.add_param_with_guard_macros("TYPE4", "NEIGHBORS", [20])
+kernel_tree.add_param_with_guard_macros("TYPE5", "NEW_ALIVE", [])
 
 kernel_tree.prune do |node|
   (node.type == :using)
